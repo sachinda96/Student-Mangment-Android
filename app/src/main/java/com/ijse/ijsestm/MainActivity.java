@@ -6,6 +6,7 @@ import androidx.appcompat.widget.Toolbar;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -14,7 +15,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.FileUtils;
 import android.provider.MediaStore;
 import android.util.Base64;
 import android.util.Log;
@@ -23,8 +23,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
+
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -32,7 +35,6 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.MultiplePermissionsReport;
 import com.karumi.dexter.PermissionToken;
@@ -40,6 +42,8 @@ import com.karumi.dexter.listener.DexterError;
 import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.PermissionRequestErrorListener;
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
+
+import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -57,9 +61,13 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
-    private Button btn;
-    private Button findBtn;
-    private EditText txtsName;
+    private Button uploadBtn;
+    private ImageButton findBtn;
+    private TextView txtsName;
+    private TextView txtsBatch;
+    private TextView txtsNic;
+    private EditText studentId;
+    final Context context = this;
 
     private byte[] imageByte;
     private String fileContentType=".jpg";
@@ -75,21 +83,31 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         requestMultiplePermissions();
 
-        btn = (Button) findViewById(R.id.btn);
-        findBtn=(Button) findViewById(R.id.findbtn);
-        txtsName=findViewById(R.id.txtsName);
+        uploadBtn = (Button) findViewById(R.id.uploadbtn);
+        findBtn= findViewById(R.id.findButton);
+        studentId=findViewById(R.id.studentID);
+        txtsBatch=findViewById(R.id.txtBatch);
+        txtsName=findViewById(R.id.txtName);
+        txtsNic=findViewById(R.id.txtNic);
+       // txtsName=findViewById(R.id.txtsName);
        // imageview = (ImageView) findViewById(R.id.iv);
 
-        btn.setOnClickListener(new View.OnClickListener() {
+        uploadBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showPictureDialog();
+               if(studentId.getText().toString().matches("")){
+                empltyFieldMessage();
+               }else{
+                   showPictureDialog();
+               }
+
             }
         });
-
+//
         findBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 setStudentDetails();
 
             }
@@ -126,12 +144,12 @@ public class MainActivity extends AppCompatActivity {
 
         startActivityForResult(galleryIntent, GALLERY);
     }
-
+//
     private void takePhotoFromCamera() {
         Intent intent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
         startActivityForResult(intent, CAMERA);
     }
-
+//
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
 
@@ -171,7 +189,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
-
+//
     private void  requestMultiplePermissions(){
         Dexter.withActivity(this)
                 .withPermissions(
@@ -209,59 +227,133 @@ public class MainActivity extends AppCompatActivity {
                 .onSameThread()
                 .check();
     }
-
+//
     private void setStudentDetails() {
 
-
-//// ...
-//
-//// Instantiate the RequestQueue.
-        RequestQueue queue = Volley.newRequestQueue(this);
-        String url ="http://192.168.8.102:8080/test/connectAndroid";
-//
-//// Request a string response from the provided URL.
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        // Display the first 500 characters of the response string.
-                        txtsName.setText("Response is: "+ response);
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                txtsName.setText("That didn't work! "+error);
-            }
-        });
-//
-//// Add the request to the RequestQueue.
-        queue.add(stringRequest);
-
-       // txtsName.setText("hello");
-    }
-
-    private  void uploadFile( ){
+        if (studentId.getText().toString().matches("")){
+          empltyFieldMessage();
+        }else{
+            RequestQueue queue = Volley.newRequestQueue(this);
+            String url ="http://192.168.8.101:8080/student/getStudentById";
 
 
-
-        RequestQueue queue = Volley.newRequestQueue(this);
-        String  url = "http://192.168.8.102:8080/fileUpload/uploadCloud";
-        StringRequest postRequest = new StringRequest(Request.Method.POST, url,
-                new Response.Listener<String>()
+            StringRequest postRequest = new StringRequest(Request.Method.POST, url,
+                    new Response.Listener<String>()
                 {
-
 
                     @Override
                     public void onResponse(String response) {
                         // response
-                        Log.d("Response", response);
+                        try {
+                            JSONObject responseJson=new JSONObject(response);
+                             txtsName.setHint(responseJson.getString("fullName"));
+                             txtsBatch.setHint(responseJson.getString("nicNo"));
+                             txtsNic.setHint(responseJson.getString("batchName"));
+
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
+
                     }
                 },
                 new Response.ErrorListener()
                 {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        // error
+
+                    }
+                }
+        ) {
+            @Override
+            protected Map<String, String> getParams()
+            {
+
+                Map<String, String>  params = new HashMap<>();
+                params.put("id", studentId.getText().toString());
+
+                return params;
+            }
+        };
+        queue.add(postRequest);
+        }
+
+
+
+
+//// ...
+//
+//// Instantiate the RequestQueue.
+
+
+    }
+//
+    private  void uploadFile( ){
+
+
+
+        RequestQueue queue = Volley.newRequestQueue(this);
+        String  url = "http://192.168.1.102:8080/fileUpload/uploadCloud";
+        StringRequest postRequest = new StringRequest(Request.Method.POST, url,
+                new Response.Listener<String>()
+                {
+
+                    @Override
+                    public void onResponse(String response) {
+                        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
+                                context);
+
+                        // set title
+                        alertDialogBuilder.setTitle("Success");
+
+                        // set dialog message
+                        alertDialogBuilder
+                                .setMessage("Image Upload Success")
+                                .setCancelable(false)
+                                .setPositiveButton("ok",new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog,int id) {
+                                        // if this button is clicked, close
+                                        // current activity
+                                        dialog.cancel();
+                                    }
+                                });
+
+
+                        // create alert dialog
+                        AlertDialog alertDialog = alertDialogBuilder.create();
+
+                        // show it
+                        alertDialog.show();
+                    }
+
+                },
+                new Response.ErrorListener()
+                {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
+                                context);
+
+                        // set title
+                        alertDialogBuilder.setTitle("Failed");
+
+                        // set dialog message
+                        alertDialogBuilder
+                                .setMessage("Image Upload Failed")
+                                .setCancelable(false)
+                                .setPositiveButton("ok",new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog,int id) {
+                                        // if this button is clicked, close
+                                        // current activity
+                                        dialog.cancel();
+                                    }
+                                });
+
+
+                        // create alert dialog
+                        AlertDialog alertDialog = alertDialogBuilder.create();
+
+                        // show it
+                        alertDialog.show();
 
                     }
                 }
@@ -272,12 +364,40 @@ public class MainActivity extends AppCompatActivity {
 
                 Map<String, String>  params = new HashMap<>();
                 params.put("file", imageString);
+                params.put("studentId", studentId.getText().toString());
                 params.put("contentType","image/"+fileContentType);
 
                 return params;
             }
         };
         queue.add(postRequest);
+    }
+
+    public  void  empltyFieldMessage(){
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
+                context);
+
+        // set title
+        alertDialogBuilder.setTitle("Invalid");
+
+        // set dialog message
+        alertDialogBuilder
+                .setMessage("Add correct student ID")
+                .setCancelable(false)
+                .setPositiveButton("ok",new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog,int id) {
+                        // if this button is clicked, close
+                        // current activity
+                        dialog.cancel();
+                    }
+                });
+
+
+        // create alert dialog
+        AlertDialog alertDialog = alertDialogBuilder.create();
+
+        // show it
+        alertDialog.show();
     }
 }
 

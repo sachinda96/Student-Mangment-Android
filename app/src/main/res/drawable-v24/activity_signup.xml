@@ -5,35 +5,31 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/bg"
-    tools:context=".MainActivity">
+    tools:context=".SignupActivity">
 
-    <!--<android.support.v7.widget.Toolbar-->
-        <!--android:id="@+id/toolbars"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="wrap_content"-->
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:background="@drawable/bg"
+        android:minHeight="?attr/actionBarSize"
+        android:theme="?attr/actionBarTheme"
+        tools:ignore="RtlCompat">
 
-        <!--android:layout_alignParentTop="true"-->
-
-        <!--android:layout_marginTop="-3dp"-->
-        <!--android:background="@drawable/bg"-->
-        <!--android:minHeight="?attr/actionBarSize"-->
-        <!--android:theme="?attr/actionBarTheme"-->
-       <!--&gt;-->
-
-        <!--<TextView-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:text="IJSE -STM"-->
-            <!--android:textAlignment="center"-->
-            <!--android:textColor="#ffff"-->
-            <!--android:textSize="20sp"-->
-            <!--android:textStyle="bold" />-->
-    <!--</android.support.v7.widget.Toolbar>-->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="IJSE -STM"
+            android:textAlignment="center"
+            android:textColor="#ffff"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+    </android.support.v7.widget.Toolbar>
     <!--<ScrollView-->
     <!--android:layout_width="match_parent"-->
     <!--android:layout_height="600dp">-->
-
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -41,18 +37,6 @@
         android:layout_centerHorizontal="true"
         android:orientation="vertical">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:layout_below="@+id/toolbar"
-            android:layout_centerHorizontal="true"
-            android:orientation="vertical">
-            <ImageView
-                android:layout_width="250dp"
-                android:layout_height="50dp"
-                android:layout_gravity="center"
-                android:background="@drawable/footer_logo"/>
-        </LinearLayout>
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -71,7 +55,7 @@
                 android:orientation="vertical">
 
                 <EditText
-                    android:id="@+id/studentID"
+                    android:id="@+id/name"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="20dp"
@@ -85,7 +69,7 @@
                     android:textSize="14sp" />
 
                 <ImageButton
-                    android:id="@+id/findButton"
+                    android:id="@+id/signup"
                     android:layout_width="50dp"
                     android:layout_height="50dp"
                     android:layout_gravity="end"
@@ -96,7 +80,7 @@
                     tools:ignore="RtlCompat" />
 
                 <TextView
-                    android:id="@+id/txtName"
+                    android:id="@+id/email"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="20dp"
@@ -110,13 +94,13 @@
                     android:textSize="14sp" />
 
                 <TextView
-                    android:id="@+id/txtBatch"
+                    android:id="@+id/password"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="20dp"
                     android:layout_marginTop="5dp"
                     android:layout_marginEnd="20dp"
-                    android:drawableLeft="@drawable/ic_chrome_reader_mode_black_24dp"
+                    android:drawableLeft="@drawable/ic_mail_outline_black_24dp"
                     android:drawablePadding="10dp"
                     android:hint="BATCH"
                     android:inputType="textPassword"
@@ -125,27 +109,27 @@
                     android:textSize="14sp" />
 
                 <TextView
-                    android:id="@+id/txtNic"
+                    android:id="@+id/batch"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="20dp"
                     android:layout_marginTop="5dp"
                     android:layout_marginEnd="20dp"
-                    android:drawableLeft="@drawable/ic_date_range_black_24dp"
+                    android:drawableLeft="@drawable/ic_chrome_reader_mode_black_24dp"
                     android:drawablePadding="10dp"
-                    android:hint="NIC NO"
+                    android:hint="NIC NO>"
                     android:inputType="textPassword"
                     android:padding="20dp"
                     android:textColorHint="#606060"
                     android:textSize="14sp" />
 
                 <!--<CheckBox-->
-                <!--android:id="@+id/checkbox"-->
-                <!--android:layout_width="match_parent"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:layout_marginLeft="30dp"-->
-                <!--android:layout_marginTop="20dp"-->
-                <!--android:text="Agree to Out Terms &amp; Conditions" />-->
+                    <!--android:id="@+id/checkbox"-->
+                    <!--android:layout_width="match_parent"-->
+                    <!--android:layout_height="wrap_content"-->
+                    <!--android:layout_marginLeft="30dp"-->
+                    <!--android:layout_marginTop="20dp"-->
+                    <!--android:text="Agree to Out Terms &amp; Conditions" />-->
 
 
 
@@ -169,7 +153,7 @@
                     android:textStyle="bold" />
 
                 <Button
-                    android:id="@+id/uploadbtn"
+                    android:id="@+id/signin"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
