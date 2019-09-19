@@ -29,6 +29,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -68,6 +69,8 @@ public class MainActivity extends AppCompatActivity {
     private TextView txtsNic;
     private EditText studentId;
     final Context context = this;
+
+    private final String BASEURL = "http://34.67.151.90:8081";
 
     private byte[] imageByte;
     private String fileContentType=".jpg";
@@ -230,11 +233,12 @@ public class MainActivity extends AppCompatActivity {
 //
     private void setStudentDetails() {
 
+        System.out.println(studentId.getText().toString());
         if (studentId.getText().toString().matches("")){
           empltyFieldMessage();
         }else{
             RequestQueue queue = Volley.newRequestQueue(this);
-            String url ="http://192.168.8.101:8080/student/getStudentById";
+            String url = BASEURL + "/student/getStudentById";
 
 
             StringRequest postRequest = new StringRequest(Request.Method.POST, url,
@@ -260,7 +264,7 @@ public class MainActivity extends AppCompatActivity {
                 {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-
+                        System.out.println(error.toString());
                     }
                 }
         ) {
@@ -290,15 +294,16 @@ public class MainActivity extends AppCompatActivity {
     private  void uploadFile( ){
 
 
-
+        System.out.println("called");
         RequestQueue queue = Volley.newRequestQueue(this);
-        String  url = "http://192.168.1.102:8080/fileUpload/uploadCloud";
+        String  url = BASEURL + "/fileUpload/uploadCloud";
         StringRequest postRequest = new StringRequest(Request.Method.POST, url,
                 new Response.Listener<String>()
                 {
 
                     @Override
                     public void onResponse(String response) {
+                        System.out.println(response);
                         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
                                 context);
 
@@ -330,6 +335,8 @@ public class MainActivity extends AppCompatActivity {
                 {
                     @Override
                     public void onErrorResponse(VolleyError error) {
+                        System.out.println("Error");
+                        System.out.println(error.toString());
                         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
                                 context);
 
@@ -370,6 +377,10 @@ public class MainActivity extends AppCompatActivity {
                 return params;
             }
         };
+        postRequest.setRetryPolicy(new DefaultRetryPolicy(
+                100000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
         queue.add(postRequest);
     }
 
