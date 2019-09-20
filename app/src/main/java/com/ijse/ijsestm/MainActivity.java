@@ -1,35 +1,22 @@
 package com.ijse.ijsestm;
 
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
-import android.app.Activity;
-import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.media.MediaScannerConnection;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Base64;
-import android.util.DisplayMetrics;
-import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -49,19 +36,10 @@ import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.PermissionRequestErrorListener;
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 import com.theartofdev.edmodo.cropper.CropImage;
-import com.theartofdev.edmodo.cropper.CropImageView;
 
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -82,6 +60,8 @@ public class MainActivity extends AppCompatActivity {
     private byte[] imageByte;
     private String fileContentType=".jpg";
     private String imageString;
+
+    AlertDialog studentResponseDialog;
 
 
 
@@ -105,7 +85,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                if(studentId.getText().toString().matches("")){
-                empltyFieldMessage();
+
+                     empltyFieldMessage();
                }else{
 
                    CropImage.activity().start(MainActivity.this);
@@ -256,11 +237,13 @@ public class MainActivity extends AppCompatActivity {
 
         System.out.println(studentId.getText().toString());
         if (studentId.getText().toString().matches("")) {
+
             empltyFieldMessage();
         } else {
             RequestQueue queue = Volley.newRequestQueue(this);
             String url = BASEURL + "/student/getStudentById";
 
+            waitingMessage("Waiting......","waiting for response");
 
             StringRequest postRequest = new StringRequest(Request.Method.POST, url,
                     new Response.Listener<String>() {
@@ -274,7 +257,7 @@ public class MainActivity extends AppCompatActivity {
                                 txtsName.setHint(responseJson.getString("fullName"));
                                 txtsBatch.setHint(responseJson.getString("nicNo"));
                                 txtsNic.setHint(responseJson.getString("batchName"));
-
+                                studentResponseDialog.cancel();
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
@@ -284,7 +267,32 @@ public class MainActivity extends AppCompatActivity {
                     new Response.ErrorListener() {
                         @Override
                         public void onErrorResponse(VolleyError error) {
-                            System.out.println(error.toString());
+                            studentResponseDialog.cancel();
+                            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
+                                    context);
+
+                            // set title
+                            alertDialogBuilder.setTitle("Failed");
+
+                            // set dialog message
+                            alertDialogBuilder
+                                    .setMessage("Student Details Invalid")
+                                    .setCancelable(false)
+                                    .setPositiveButton("ok",new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog,int id) {
+                                            // if this button is clicked, close
+                                            // current activity
+                                            dialog.cancel();
+                                        }
+                                    });
+
+
+                            // create alert dialog
+                            AlertDialog alertDialog = alertDialogBuilder.create();
+
+                            // show it
+                            alertDialog.show();
+
                         }
                     }
             ) {
@@ -305,13 +313,15 @@ public class MainActivity extends AppCompatActivity {
 
         RequestQueue queue = Volley.newRequestQueue(this);
         String  url = BASEURL + "/fileUpload/uploadCloud";
+
+        waitingMessage("Image Uploading.....","waiting for response");
         StringRequest postRequest = new StringRequest(Request.Method.POST, url,
                 new Response.Listener<String>()
                 {
 
                     @Override
                     public void onResponse(String response) {
-                        System.out.println(response);
+                        studentResponseDialog.cancel();
                         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
                                 context);
 
@@ -343,8 +353,7 @@ public class MainActivity extends AppCompatActivity {
                 {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        System.out.println("Error");
-                        System.out.println(error.toString());
+                        studentResponseDialog.cancel();
                         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
                                 context);
 
@@ -419,6 +428,27 @@ public class MainActivity extends AppCompatActivity {
         alertDialog.show();
     }
 
+
+    public  void  waitingMessage(String title,String message){
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
+                context);
+
+        // set title
+        alertDialogBuilder.setTitle(title);
+
+        // set dialog message
+        alertDialogBuilder
+                .setMessage(message)
+                .setCancelable(false);
+
+
+
+        // create alert dialog
+        studentResponseDialog = alertDialogBuilder.create();
+
+        // show it
+        studentResponseDialog.show();
+    }
 
 }
 
