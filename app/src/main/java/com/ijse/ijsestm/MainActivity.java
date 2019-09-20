@@ -1,11 +1,15 @@
 package com.ijse.ijsestm;
 
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -17,6 +21,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Base64;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -43,6 +48,8 @@ import com.karumi.dexter.listener.DexterError;
 import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.PermissionRequestErrorListener;
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
+import com.theartofdev.edmodo.cropper.CropImage;
+import com.theartofdev.edmodo.cropper.CropImageView;
 
 import org.json.JSONObject;
 
@@ -76,9 +83,7 @@ public class MainActivity extends AppCompatActivity {
     private String fileContentType=".jpg";
     private String imageString;
 
-   // private ImageView imageview;
-    private static final String IMAGE_DIRECTORY = "/demonuts";
-    private int GALLERY = 1, CAMERA = 2;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,14 +91,15 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         requestMultiplePermissions();
 
+
+
         uploadBtn = (Button) findViewById(R.id.uploadbtn);
         findBtn= findViewById(R.id.findButton);
         studentId=findViewById(R.id.studentID);
         txtsBatch=findViewById(R.id.txtBatch);
         txtsName=findViewById(R.id.txtName);
         txtsNic=findViewById(R.id.txtNic);
-       // txtsName=findViewById(R.id.txtsName);
-       // imageview = (ImageView) findViewById(R.id.iv);
+
 
         uploadBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -101,12 +107,14 @@ public class MainActivity extends AppCompatActivity {
                if(studentId.getText().toString().matches("")){
                 empltyFieldMessage();
                }else{
-                   showPictureDialog();
+
+                   CropImage.activity().start(MainActivity.this);
+
                }
 
             }
         });
-//
+
         findBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -118,81 +126,94 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void showPictureDialog(){
-        AlertDialog.Builder pictureDialog = new AlertDialog.Builder(this);
-        pictureDialog.setTitle("Select Action");
-        String[] pictureDialogItems = {
-                "Select photo from gallery",
-                "Capture photo from camera" };
-        pictureDialog.setItems(pictureDialogItems,
-                new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        switch (which) {
-                            case 0:
-                                choosePhotoFromGallary();
-                                break;
-                            case 1:
-                                takePhotoFromCamera();
-                                break;
-                        }
-                    }
-                });
-        pictureDialog.show();
-    }
+//    private void showPictureDialog(){
+//        AlertDialog.Builder pictureDialog = new AlertDialog.Builder(this);
+//        pictureDialog.setTitle("Select Action");
+//        String[] pictureDialogItems = {
+//                "Select photo from gallery",
+//                "Capture photo from camera" };
+//        pictureDialog.setItems(pictureDialogItems,
+//                new DialogInterface.OnClickListener() {
+//                    @Override
+//                    public void onClick(DialogInterface dialog, int which) {
+//                        switch (which) {
+//                            case 0:
+//                                GetImageFromGallery();
+//                               // choosePhotoFromGallary();
+//                                break;
+//                            case 1:
+//                                ClickImageFromCamera();
+//                                //takePhotoFromCamera();
+//                                break;
+//                        }
+//                    }
+//                });
+//        pictureDialog.show();
+//    }
 
-    public void choosePhotoFromGallary() {
-        Intent galleryIntent = new Intent(Intent.ACTION_PICK,
-                android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
 
-        startActivityForResult(galleryIntent, GALLERY);
-    }
+
+//    public void ClickImageFromCamera() {
 //
-    private void takePhotoFromCamera() {
-        Intent intent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-        startActivityForResult(intent, CAMERA);
-    }
+//        CamIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
 //
+//        file = new File(Environment.getExternalStorageDirectory(),
+//                "file" + String.valueOf(System.currentTimeMillis()) + ".jpg");
+//        uri = Uri.fromFile(file);
+//
+//        CamIntent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, uri);
+//
+//        CamIntent.putExtra("return-data", true);
+//
+//        startActivityForResult(CamIntent, 0);
+//
+//    }
+
+//    public void GetImageFromGallery(){
+//
+//        GalIntent = new Intent(Intent.ACTION_PICK,
+//                android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+//
+//        startActivityForResult(Intent.createChooser(GalIntent, "Select Image From Gallery"), 2);
+//
+//    }
+
+
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == this.RESULT_CANCELED) {
-            return;
-        }
-        if (requestCode == GALLERY) {
-            if (data != null) {
-                Uri contentURI = data.getData();
-                try {
-                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), contentURI);
+
+        if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
+            CropImage.ActivityResult result = CropImage.getActivityResult(data);
+            if (resultCode == RESULT_OK) {
+                try{
+                    Uri uri = result.getUri();
+                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(),uri);
                     saveImage(bitmap);
-                    Toast.makeText(MainActivity.this, "Image Saved!", Toast.LENGTH_SHORT).show();
-                 //   imageview.setImageBitmap(bitmap);
-
-                } catch (IOException e) {
+                }catch (Exception e){
                     e.printStackTrace();
-                    Toast.makeText(MainActivity.this, "Failed!", Toast.LENGTH_SHORT).show();
                 }
-            }
 
-        } else if (requestCode == CAMERA) {
-            Bitmap thumbnail = (Bitmap) data.getExtras().get("data");
-           // imageview.setImageBitmap(thumbnail);
-            saveImage(thumbnail);
-            Toast.makeText(MainActivity.this, "Image Saved!", Toast.LENGTH_SHORT).show();
+            } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
+                Exception error = result.getError();
+                Toast.makeText(getApplicationContext(), "Fail to Crop Try Again", Toast.LENGTH_SHORT).show();
+            }
         }
     }
+
 
     public void saveImage(Bitmap myBitmap) {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         myBitmap.compress(Bitmap.CompressFormat.JPEG, 90, bytes);
         imageByte=bytes.toByteArray();
         imageString = Base64.encodeToString(imageByte,Base64.DEFAULT);
-            uploadFile();
+
+        System.out.println(imageString);
+           uploadFile();
 
 
     }
-//
+
     private void  requestMultiplePermissions(){
         Dexter.withActivity(this)
                 .withPermissions(
@@ -230,71 +251,58 @@ public class MainActivity extends AppCompatActivity {
                 .onSameThread()
                 .check();
     }
-//
+////
     private void setStudentDetails() {
 
         System.out.println(studentId.getText().toString());
-        if (studentId.getText().toString().matches("")){
-          empltyFieldMessage();
-        }else{
+        if (studentId.getText().toString().matches("")) {
+            empltyFieldMessage();
+        } else {
             RequestQueue queue = Volley.newRequestQueue(this);
             String url = BASEURL + "/student/getStudentById";
 
 
             StringRequest postRequest = new StringRequest(Request.Method.POST, url,
-                    new Response.Listener<String>()
-                {
+                    new Response.Listener<String>() {
 
-                    @Override
-                    public void onResponse(String response) {
-                        // response
-                        try {
-                            JSONObject responseJson=new JSONObject(response);
-                             txtsName.setHint(responseJson.getString("fullName"));
-                             txtsBatch.setHint(responseJson.getString("nicNo"));
-                             txtsNic.setHint(responseJson.getString("batchName"));
+                        @Override
+                        public void onResponse(String response) {
+                            // response
+                            try {
+                                System.out.println(response);
+                                JSONObject responseJson = new JSONObject(response);
+                                txtsName.setHint(responseJson.getString("fullName"));
+                                txtsBatch.setHint(responseJson.getString("nicNo"));
+                                txtsNic.setHint(responseJson.getString("batchName"));
 
-                        }catch (Exception e){
-                            e.printStackTrace();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+
                         }
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            System.out.println(error.toString());
+                        }
+                    }
+            ) {
+                @Override
+                protected Map<String, String> getParams() {
 
-                    }
-                },
-                new Response.ErrorListener()
-                {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        System.out.println(error.toString());
-                    }
+                    Map<String, String> params = new HashMap<>();
+                    params.put("id", studentId.getText().toString());
+
+                    return params;
                 }
-        ) {
-            @Override
-            protected Map<String, String> getParams()
-            {
-
-                Map<String, String>  params = new HashMap<>();
-                params.put("id", studentId.getText().toString());
-
-                return params;
-            }
-        };
-        queue.add(postRequest);
+            };
+            queue.add(postRequest);
         }
-
-
-
-
-//// ...
-//
-//// Instantiate the RequestQueue.
-
-
     }
-//
+
     private  void uploadFile( ){
 
-
-        System.out.println("called");
         RequestQueue queue = Volley.newRequestQueue(this);
         String  url = BASEURL + "/fileUpload/uploadCloud";
         StringRequest postRequest = new StringRequest(Request.Method.POST, url,
@@ -383,7 +391,7 @@ public class MainActivity extends AppCompatActivity {
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
         queue.add(postRequest);
     }
-
+//
     public  void  empltyFieldMessage(){
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
                 context);
@@ -410,6 +418,8 @@ public class MainActivity extends AppCompatActivity {
         // show it
         alertDialog.show();
     }
+
+
 }
 
 
