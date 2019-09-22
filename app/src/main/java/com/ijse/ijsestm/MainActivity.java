@@ -5,18 +5,22 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.Manifest;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Base64;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -39,10 +43,16 @@ import com.theartofdev.edmodo.cropper.CropImage;
 
 import org.json.JSONObject;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import id.zelory.compressor.Compressor;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -53,12 +63,16 @@ public class MainActivity extends AppCompatActivity {
     private TextView txtsBatch;
     private TextView txtsNic;
     private EditText studentId;
+    private TextView alradyText;
+    private ImageButton imageViewButton;
     final Context context = this;
-
-    private final String BASEURL = "http://34.67.151.90:8081";
+    private ImageView imageView;
+    private Dialog dialog;
+//"http://35.225.76.194:8081"
+    private final String BASEURL = "http://192.168.1.103:8080";
 
     private byte[] imageByte;
-    private String fileContentType=".jpg";
+    private String fileContentType=".png";
     private String imageString;
 
     AlertDialog studentResponseDialog;
@@ -79,7 +93,12 @@ public class MainActivity extends AppCompatActivity {
         txtsBatch=findViewById(R.id.txtBatch);
         txtsName=findViewById(R.id.txtName);
         txtsNic=findViewById(R.id.txtNic);
+        alradyText=findViewById(R.id.txtImageAlready);
+        imageViewButton=findViewById(R.id.viewimgBtn);
+        imageView=(ImageView)findViewById(R.id.imageView);
 
+        alradyText.setVisibility(View.INVISIBLE);
+        imageViewButton.setVisibility(View.INVISIBLE);
 
         uploadBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -101,6 +120,18 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
 
                 setStudentDetails();
+
+            }
+        });
+
+        imageViewButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(MainActivity.this,Pop.class));
+//                Toast.makeText(getApplicationContext(), "Fail to Crop Try Again", Toast.LENGTH_SHORT).show();
+//               dialog=new Dialog(MainActivity.this);
+//               dialog.setContentView(R.layout.viewimage);
+//               dialog.setTitle("Seted");
 
             }
         });
@@ -169,8 +200,11 @@ public class MainActivity extends AppCompatActivity {
             if (resultCode == RESULT_OK) {
                 try{
                     Uri uri = result.getUri();
-                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(),uri);
-                    saveImage(bitmap);
+                    File file = new File(uri.getPath());
+                    Bitmap compressedImageBitmap = new Compressor(this).compressToBitmap(file);
+                    System.out.println("sizez  "+compressedImageBitmap.getByteCount());
+                    //Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(),uri);
+                    saveImage(compressedImageBitmap);
                 }catch (Exception e){
                     e.printStackTrace();
                 }
@@ -184,12 +218,15 @@ public class MainActivity extends AppCompatActivity {
 
 
     public void saveImage(Bitmap myBitmap) {
+        myBitmap = Bitmap.createScaledBitmap(myBitmap, 200, 200, false);
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        myBitmap.compress(Bitmap.CompressFormat.JPEG, 90, bytes);
+        myBitmap.compress(Bitmap.CompressFormat.PNG, 1, bytes);
+
+        System.out.println("bitmap count  compress    "+myBitmap.getByteCount());
         imageByte=bytes.toByteArray();
         imageString = Base64.encodeToString(imageByte,Base64.DEFAULT);
 
-        System.out.println(imageString);
+       // System.out.println(imageString);
            uploadFile();
 
 
@@ -257,6 +294,9 @@ public class MainActivity extends AppCompatActivity {
                                 txtsName.setHint(responseJson.getString("fullName"));
                                 txtsBatch.setHint(responseJson.getString("nicNo"));
                                 txtsNic.setHint(responseJson.getString("batchName"));
+
+                                downloadAvailableImage();
+
                                 studentResponseDialog.cancel();
                             } catch (Exception e) {
                                 e.printStackTrace();
@@ -292,6 +332,8 @@ public class MainActivity extends AppCompatActivity {
 
                             // show it
                             alertDialog.show();
+                            System.out.println("sdhfmsdhf dsf,dsfnm,dsf, sfdn,msnf,dsf sd,fndsnf, sdfhdsjfh");
+                            downloadAvailableImage();
 
                         }
                     }
@@ -448,6 +490,88 @@ public class MainActivity extends AppCompatActivity {
 
         // show it
         studentResponseDialog.show();
+    }
+
+        void downloadAvailableImage(){
+        RequestQueue queue = Volley.newRequestQueue(this);
+        String  url = BASEURL + "/fileUpload/getFile";
+
+
+        StringRequest postRequest = new StringRequest(Request.Method.POST, url,
+                new Response.Listener<String>()
+                {
+
+                    @Override
+                    public void onResponse(String response) {
+                        if(response!=null){
+                            System.out.println("workkk ");
+                            System.out.println(response);
+                            alradyText.setVisibility(View.VISIBLE);
+                            imageViewButton.setVisibility(View.VISIBLE);
+
+                            imageView=(ImageView) findViewById(R.id.imageView);
+
+                            byte[] decodedString = Base64.decode(response, Base64.DEFAULT);
+                            Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0,decodedString.length);
+                            System.out.println(decodedByte);
+
+                            InputStream stream = new ByteArrayInputStream(Base64.decode(response.getBytes(), Base64.URL_SAFE));
+                            Bitmap image = BitmapFactory.decodeStream(stream);
+//                            imageView.setImageBitmap(image);
+                           try {
+                               File tempDir= Environment.getExternalStorageDirectory();
+                               tempDir=new File(tempDir.getAbsolutePath()+"/tempar/");
+                               tempDir.mkdir();
+                               File tempFile = File.createTempFile("uplodedimage", ".jpg", tempDir);
+                               ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+                               decodedByte.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
+                               byte[] bitmapData = bytes.toByteArray();
+
+                               //write the bytes in file
+                               FileOutputStream fos = new FileOutputStream(tempFile);
+                               fos.write(bitmapData);
+                               fos.flush();
+                               fos.close();
+
+                               System.out.println(Uri.fromFile(tempFile));
+                        //       ImageView imageView = new ImageView(this);
+                               imageView.setImageURI(Uri.fromFile(tempFile));
+                               startActivity(new Intent(MainActivity.this,Pop.class));
+                           }catch (Exception e){
+
+                           }
+
+
+                        }
+
+
+                    }
+
+                },
+                new Response.ErrorListener()
+                {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        System.out.println("workkkkkk 2");
+                    }
+                }
+        ) {
+            @Override
+            protected Map<String, String> getParams()
+            {
+
+                Map<String, String>  params = new HashMap<>();
+                params.put("studentId",studentId.getText().toString());
+
+
+                return params;
+            }
+        };
+        postRequest.setRetryPolicy(new DefaultRetryPolicy(
+                100000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+        queue.add(postRequest);
     }
 
 }
