@@ -11,6 +11,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -68,6 +70,7 @@ public class MainActivity extends AppCompatActivity {
     final Context context = this;
     private ImageView imageView;
     private Dialog dialog;
+    public  static String imagePath;
 //"http://35.225.76.194:8081"
     private final String BASEURL = "http://192.168.1.103:8080";
 
@@ -127,6 +130,11 @@ public class MainActivity extends AppCompatActivity {
         imageViewButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
+            //    dialog.setContentView(R.layout.viewimage);
+
+             //   dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+             //   dialog.show();
                 startActivity(new Intent(MainActivity.this,Pop.class));
 //                Toast.makeText(getApplicationContext(), "Fail to Crop Try Again", Toast.LENGTH_SHORT).show();
 //               dialog=new Dialog(MainActivity.this);
@@ -506,40 +514,11 @@ public class MainActivity extends AppCompatActivity {
                         if(response!=null){
                             System.out.println("workkk ");
                             System.out.println(response);
+                            imagePath=response;
                             alradyText.setVisibility(View.VISIBLE);
                             imageViewButton.setVisibility(View.VISIBLE);
 
-                            imageView=(ImageView) findViewById(R.id.imageView);
 
-                            byte[] decodedString = Base64.decode(response, Base64.DEFAULT);
-                            Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0,decodedString.length);
-                            System.out.println(decodedByte);
-
-                            InputStream stream = new ByteArrayInputStream(Base64.decode(response.getBytes(), Base64.URL_SAFE));
-                            Bitmap image = BitmapFactory.decodeStream(stream);
-//                            imageView.setImageBitmap(image);
-                           try {
-                               File tempDir= Environment.getExternalStorageDirectory();
-                               tempDir=new File(tempDir.getAbsolutePath()+"/tempar/");
-                               tempDir.mkdir();
-                               File tempFile = File.createTempFile("uplodedimage", ".jpg", tempDir);
-                               ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-                               decodedByte.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
-                               byte[] bitmapData = bytes.toByteArray();
-
-                               //write the bytes in file
-                               FileOutputStream fos = new FileOutputStream(tempFile);
-                               fos.write(bitmapData);
-                               fos.flush();
-                               fos.close();
-
-                               System.out.println(Uri.fromFile(tempFile));
-                        //       ImageView imageView = new ImageView(this);
-                               imageView.setImageURI(Uri.fromFile(tempFile));
-                               startActivity(new Intent(MainActivity.this,Pop.class));
-                           }catch (Exception e){
-
-                           }
 
 
                         }
