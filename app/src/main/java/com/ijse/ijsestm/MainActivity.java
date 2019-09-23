@@ -71,8 +71,7 @@ public class MainActivity extends AppCompatActivity {
     private ImageView imageView;
     private Dialog dialog;
     public  static String imagePath;
-//"http://35.225.76.194:8081"
-    private final String BASEURL = "http://192.168.1.103:8080";
+    private final String BASEURL = "http://35.225.76.194:8081";
 
     private byte[] imageByte;
     private String fileContentType=".png";
@@ -131,72 +130,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-            //    dialog.setContentView(R.layout.viewimage);
-
-             //   dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-             //   dialog.show();
                 startActivity(new Intent(MainActivity.this,Pop.class));
-//                Toast.makeText(getApplicationContext(), "Fail to Crop Try Again", Toast.LENGTH_SHORT).show();
-//               dialog=new Dialog(MainActivity.this);
-//               dialog.setContentView(R.layout.viewimage);
-//               dialog.setTitle("Seted");
+
 
             }
         });
 
     }
-
-//    private void showPictureDialog(){
-//        AlertDialog.Builder pictureDialog = new AlertDialog.Builder(this);
-//        pictureDialog.setTitle("Select Action");
-//        String[] pictureDialogItems = {
-//                "Select photo from gallery",
-//                "Capture photo from camera" };
-//        pictureDialog.setItems(pictureDialogItems,
-//                new DialogInterface.OnClickListener() {
-//                    @Override
-//                    public void onClick(DialogInterface dialog, int which) {
-//                        switch (which) {
-//                            case 0:
-//                                GetImageFromGallery();
-//                               // choosePhotoFromGallary();
-//                                break;
-//                            case 1:
-//                                ClickImageFromCamera();
-//                                //takePhotoFromCamera();
-//                                break;
-//                        }
-//                    }
-//                });
-//        pictureDialog.show();
-//    }
-
-
-
-//    public void ClickImageFromCamera() {
-//
-//        CamIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-//
-//        file = new File(Environment.getExternalStorageDirectory(),
-//                "file" + String.valueOf(System.currentTimeMillis()) + ".jpg");
-//        uri = Uri.fromFile(file);
-//
-//        CamIntent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, uri);
-//
-//        CamIntent.putExtra("return-data", true);
-//
-//        startActivityForResult(CamIntent, 0);
-//
-//    }
-
-//    public void GetImageFromGallery(){
-//
-//        GalIntent = new Intent(Intent.ACTION_PICK,
-//                android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-//
-//        startActivityForResult(Intent.createChooser(GalIntent, "Select Image From Gallery"), 2);
-//
-//    }
 
 
     @Override
@@ -210,8 +150,7 @@ public class MainActivity extends AppCompatActivity {
                     Uri uri = result.getUri();
                     File file = new File(uri.getPath());
                     Bitmap compressedImageBitmap = new Compressor(this).compressToBitmap(file);
-                    System.out.println("sizez  "+compressedImageBitmap.getByteCount());
-                    //Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(),uri);
+
                     saveImage(compressedImageBitmap);
                 }catch (Exception e){
                     e.printStackTrace();
@@ -234,7 +173,7 @@ public class MainActivity extends AppCompatActivity {
         imageByte=bytes.toByteArray();
         imageString = Base64.encodeToString(imageByte,Base64.DEFAULT);
 
-       // System.out.println(imageString);
+
            uploadFile();
 
 
@@ -396,6 +335,8 @@ public class MainActivity extends AppCompatActivity {
 
                         // show it
                         alertDialog.show();
+
+                        MainActivity m=new MainActivity();
                     }
 
                 },
